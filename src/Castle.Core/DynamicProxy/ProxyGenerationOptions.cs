@@ -37,7 +37,7 @@ namespace Castle.DynamicProxy
 
 		private List<object> mixins;
 		internal readonly IList<Attribute> attributesToAddToGeneratedTypes = new List<Attribute>();
-		private readonly IList<CustomAttributeBuilder> additionalAttributes = new List<CustomAttributeBuilder>();
+		private readonly IList<CustomAttributeInfo> additionalAttributes = new List<CustomAttributeInfo>();
 
 #if FEATURE_SERIALIZATION
 		[NonSerialized]
@@ -89,7 +89,7 @@ namespace Castle.DynamicProxy
 		}
 
 #if FEATURE_SERIALIZATION
-#if DOTNET40
+#if FEATURE_SECURITY_PERMISSIONS && DOTNET40
 		[SecurityCritical]
 #endif
 		public void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -107,15 +107,7 @@ namespace Castle.DynamicProxy
 
 		public Type BaseTypeForInterfaceProxy { get; set; }
 
-		[Obsolete(
-			"This property is obsolete and will be removed in future versions. Use AdditionalAttributes property instead. " +
-			"You can use AttributeUtil class to simplify creating CustomAttributeBuilder instances for common cases.")]
-		public IList<Attribute> AttributesToAddToGeneratedTypes
-		{
-			get { return attributesToAddToGeneratedTypes; }
-		}
-
-		public IList<CustomAttributeBuilder> AdditionalAttributes
+		public IList<CustomAttributeInfo> AdditionalAttributes
 		{
 			get { return additionalAttributes; }
 		}

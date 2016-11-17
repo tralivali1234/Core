@@ -111,7 +111,11 @@ namespace Castle.DynamicProxy.Generators.Emitters
 		{
 			get
 			{
+#if FEATURE_LEGACY_REFLECTION_API
 				var attributes = builder.GetMethodImplementationFlags();
+#else
+				var attributes = builder.MethodImplementationFlags;
+#endif
 				return (attributes & MethodImplAttributes.Runtime) != 0;
 			}
 		}
@@ -154,27 +158,8 @@ namespace Castle.DynamicProxy.Generators.Emitters
 				var parameterBuilder = builder.DefineParameter(parameter.Position + 1, parameter.Attributes, parameter.Name);
 				foreach (var attribute in parameter.GetNonInheritableAttributes())
 				{
-					parameterBuilder.SetCustomAttribute(attribute);
+					parameterBuilder.SetCustomAttribute(attribute.Builder);
 				}
-#if DOTNET45
-				if (parameter.HasDefaultValue && parameter.DefaultValue != null)
-				{
-					if (parameter.ParameterType == typeof(decimal) || parameter.ParameterType == typeof(decimal?))
-					{
-						/*
-						 * Because of a limitation of the .NET Framework, a decimal value may not 
-						 * be passed to SetConstant(), so omit the call in this instance.
-						 * 
-						 * See https://github.com/castleproject/Core/issues/87 and
-						 * https://msdn.microsoft.com/en-au/library/system.reflection.emit.parameterbuilder.setconstant(v=vs.110).aspx
-						 * for additional information.
-						 */
-						continue;
-					}
-					
-					parameterBuilder.SetConstant(parameter.DefaultValue);
-				}
-#endif
 			}
 		}
 
@@ -188,22 +173,22 @@ namespace Castle.DynamicProxy.Generators.Emitters
 		{
 			builder.SetSignature(
 				returnType,
-#if SILVERLIGHT
-				null,
-				null,
-#else
+#if FEATURE_EMIT_CUSTOMMODIFIERS
 				returnParameter.GetRequiredCustomModifiers(),
 				returnParameter.GetOptionalCustomModifiers(),
+#else
+				null,
+				null,
 #endif
 				parameters,
-#if SILVERLIGHT
-				null,
-				null
-#else
+#if FEATURE_EMIT_CUSTOMMODIFIERS
 				baseMethodParameters.Select(x => x.GetRequiredCustomModifiers()).ToArray(),
 				baseMethodParameters.Select(x => x.GetOptionalCustomModifiers()).ToArray()
+#else
+				null,
+				null
 #endif
-				);
+			);
 		}
 	}
 }

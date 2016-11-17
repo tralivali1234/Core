@@ -16,7 +16,7 @@ namespace Castle.DynamicProxy.Tests
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Reflection.Emit;
+	using System.Reflection;
 
 	using Castle.DynamicProxy.Tests.Mixins;
 
@@ -24,7 +24,11 @@ namespace Castle.DynamicProxy.Tests
 
 	using NUnit.Framework;
 
-	using DescriptionAttribute = System.ComponentModel.DescriptionAttribute;
+	public class DescriptionAttribute : Attribute
+	{
+		public string Description { get; set; }
+		public DescriptionAttribute(string description) { Description = description; }
+	}
 
 	[TestFixture]
 	public class ProxyGenerationOptionsTestCase
@@ -32,12 +36,8 @@ namespace Castle.DynamicProxy.Tests
 		private ProxyGenerationOptions _options1;
 		private ProxyGenerationOptions _options2;
 
-#if FEATURE_XUNITNET
-		public ProxyGenerationOptionsTestCase()
-#else
 		[SetUp]
 		public void Init()
-#endif
 		{
 			_options1 = new ProxyGenerationOptions();
 			_options2 = new ProxyGenerationOptions();
@@ -203,11 +203,11 @@ namespace Castle.DynamicProxy.Tests
 		[Test]
 		public void Equals_DifferentAdditionalAttributes()
 		{
-			var builder1 = new CustomAttributeBuilder(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
-			var builder2 = new CustomAttributeBuilder(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test2" });
+			var info1 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
+			var info2 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test2" });
 
-			_options1.AdditionalAttributes.Add(builder1);
-			_options2.AdditionalAttributes.Add(builder2);
+			_options1.AdditionalAttributes.Add(info1);
+			_options2.AdditionalAttributes.Add(info2);
 
 			Assert.AreNotEqual(_options1, _options2);
 		}
@@ -215,9 +215,11 @@ namespace Castle.DynamicProxy.Tests
 		[Test]
 		public void Equals_SameAdditionalAttributes()
 		{
-			var builder = new CustomAttributeBuilder(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test" });
-			_options1.AdditionalAttributes.Add(builder);
-			_options2.AdditionalAttributes.Add(builder);
+			var info1 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test" });
+			var info2 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test" });
+
+			_options1.AdditionalAttributes.Add(info1);
+			_options2.AdditionalAttributes.Add(info2);
 
 			Assert.AreEqual(_options1, _options2);
 		}
@@ -225,14 +227,16 @@ namespace Castle.DynamicProxy.Tests
 		[Test]
 		public void Equals_SameAdditionalAttributesDifferentOrder()
 		{
-			var builder1 = new CustomAttributeBuilder(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
-			var builder2 = new CustomAttributeBuilder(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test2" });
+			var info11 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
+			var info12 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
+			var info21 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test2" });
+			var info22 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test2" });
 
-			_options1.AdditionalAttributes.Add(builder1);
-			_options1.AdditionalAttributes.Add(builder2);
+			_options1.AdditionalAttributes.Add(info11);
+			_options1.AdditionalAttributes.Add(info21);
 
-			_options2.AdditionalAttributes.Add(builder2);
-			_options2.AdditionalAttributes.Add(builder1);
+			_options2.AdditionalAttributes.Add(info22);
+			_options2.AdditionalAttributes.Add(info12);
 
 			Assert.AreEqual(_options1, _options2);
 		}
@@ -240,14 +244,16 @@ namespace Castle.DynamicProxy.Tests
 		[Test]
 		public void Equals_DifferentAdditionalAttributesDuplicateEntries()
 		{
-			var builder1 = new CustomAttributeBuilder(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
-			var builder2 = new CustomAttributeBuilder(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test2" });
+			var info11 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
+			var info12 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
+			var info13 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
+			var info2 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test2" });
 
-			_options1.AdditionalAttributes.Add(builder1);
-			_options1.AdditionalAttributes.Add(builder1);
+			_options1.AdditionalAttributes.Add(info11);
+			_options1.AdditionalAttributes.Add(info12);
 
-			_options2.AdditionalAttributes.Add(builder1);
-			_options2.AdditionalAttributes.Add(builder2);
+			_options2.AdditionalAttributes.Add(info13);
+			_options2.AdditionalAttributes.Add(info2);
 
 			Assert.AreNotEqual(_options1, _options2);
 		}
@@ -330,9 +336,10 @@ namespace Castle.DynamicProxy.Tests
 		[Test]
 		public void GetHashCode_EqualOptions_SameAdditionalAttributes()
 		{
-			var builder = new CustomAttributeBuilder(typeof(DescriptionAttribute).GetConstructor(new [] { typeof(string) }), new object[] { "Test" });
-			_options1.AdditionalAttributes.Add(builder);
-			_options2.AdditionalAttributes.Add(builder);
+			var info1 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new [] { typeof(string) }), new object[] { "Test" });
+			var info2 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new [] { typeof(string) }), new object[] { "Test" });
+			_options1.AdditionalAttributes.Add(info1);
+			_options2.AdditionalAttributes.Add(info2);
 
 			Assert.AreEqual(_options1.GetHashCode(), _options2.GetHashCode());
 		}
@@ -340,14 +347,17 @@ namespace Castle.DynamicProxy.Tests
 		[Test]
 		public void GetHashCode_EqualOptions_SameAdditionalAttributesDifferentOrder()
 		{
-			var builder1 = new CustomAttributeBuilder(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
-			var builder2 = new CustomAttributeBuilder(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test2" });
+			var info11 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
+			var info12 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
+			var info21 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test2" });
+			var info22 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test2" });
 
-			_options1.AdditionalAttributes.Add(builder1);
-			_options1.AdditionalAttributes.Add(builder2);
 
-			_options2.AdditionalAttributes.Add(builder2);
-			_options2.AdditionalAttributes.Add(builder1);
+			_options1.AdditionalAttributes.Add(info11);
+			_options1.AdditionalAttributes.Add(info21);
+
+			_options2.AdditionalAttributes.Add(info22);
+			_options2.AdditionalAttributes.Add(info12);
 
 			Assert.AreEqual(_options1.GetHashCode(), _options2.GetHashCode());
 		}
@@ -355,11 +365,11 @@ namespace Castle.DynamicProxy.Tests
 		[Test]
 		public void GetHashCode_DifferentOptions_DifferentAdditionalAttributes()
 		{
-			var builder1 = new CustomAttributeBuilder(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
-			var builder2 = new CustomAttributeBuilder(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test2" });
+			var info1 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
+			var info2 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test2" });
 
-			_options1.AdditionalAttributes.Add(builder1);
-			_options2.AdditionalAttributes.Add(builder2);
+			_options1.AdditionalAttributes.Add(info1);
+			_options2.AdditionalAttributes.Add(info2);
 
 			Assert.AreNotEqual(_options1.GetHashCode(), _options2.GetHashCode());
 		}
@@ -367,13 +377,16 @@ namespace Castle.DynamicProxy.Tests
 		[Test]
 		public void GetHashCode_DifferentOptions_SameAdditionalAttributesButDuplicateEntries()
 		{
-			var builder = new CustomAttributeBuilder(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
+			var info1 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
+			var info2 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
+			var info3 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
+			var info4 = new CustomAttributeInfo(typeof(DescriptionAttribute).GetConstructor(new[] { typeof(string) }), new object[] { "Test1" });
 
-			_options1.AdditionalAttributes.Add(builder);
+			_options1.AdditionalAttributes.Add(info1);
 
-			_options2.AdditionalAttributes.Add(builder);
-			_options2.AdditionalAttributes.Add(builder);
-			_options2.AdditionalAttributes.Add(builder);
+			_options2.AdditionalAttributes.Add(info2);
+			_options2.AdditionalAttributes.Add(info3);
+			_options2.AdditionalAttributes.Add(info4);
 
 			Assert.AreNotEqual(_options1.GetHashCode(), _options2.GetHashCode());
 		}
