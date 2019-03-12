@@ -58,8 +58,6 @@ namespace Castle.Components.DictionaryAdapter.Xml
 		/// Initializes a new instance of the <see cref="XmlAdapter"/> class
 		/// that represents a child object in a larger object graph.
 		/// </summary>
-		/// <param name="node"></param>
-		/// <param name="references"></param>
 		public XmlAdapter(IXmlNode node, XmlReferenceManager references)
 		{
 		    if (node == null)
@@ -377,7 +375,7 @@ namespace Castle.Components.DictionaryAdapter.Xml
 
 		void IVirtual.Realize()
 		{
-			throw new NotSupportedException("XmlAdapter does not support realization ssvia IVirtual.Realize().");
+			throw new NotSupportedException("XmlAdapter does not support realization via IVirtual.Realize().");
 		}
 
 		public event EventHandler Realized;

@@ -23,13 +23,17 @@ namespace Castle.DynamicProxy
 		/// <summary>
 		///   Get the proxy target (note that null is a valid target!)
 		/// </summary>
-		/// <returns></returns>
 		object DynProxyGetTarget();
+
+		/// <summary>
+		///   Set the proxy target.
+		/// </summary>
+		/// <param name="target">New proxy target.</param>
+		void DynProxySetTarget(object target);
 
 		/// <summary>
 		///   Gets the interceptors for the proxy
 		/// </summary>
-		/// <returns></returns>
 		IInterceptor[] GetInterceptors();
 	}
 }

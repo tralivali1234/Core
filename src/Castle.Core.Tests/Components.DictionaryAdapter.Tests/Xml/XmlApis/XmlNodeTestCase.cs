@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace CastleTests.Components.DictionaryAdapter.Xml.Tests
+namespace Castle.Components.DictionaryAdapter.Xml.Tests
 {
 	using System;
 	using System.Xml;
+
 	using Castle.Components.DictionaryAdapter.Tests;
-	using Castle.Components.DictionaryAdapter.Xml;
+
 	using NUnit.Framework;
 
 	[TestFixture]
@@ -80,9 +81,6 @@ namespace CastleTests.Components.DictionaryAdapter.Xml.Tests
 		}
 
 		[Test]
-#if __MonoCS__
-		[Ignore("Expected: urn:a:T  But was: T")]
-#endif
 		public void XsiType_OfElement_WhenXsiTypeAttributeIsPresent()
 		{
 			var node = NodeForElement("<X xsi:type='p:T' xmlns:p='urn:a' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'/>");

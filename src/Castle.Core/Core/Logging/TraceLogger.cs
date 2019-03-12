@@ -115,7 +115,7 @@ namespace Castle.Core.Logging
 			lock (cache)
 			{
 				// because TraceSource is meant to be used as a static member, and because
-				// building up the configuraion inheritance is non-trivial, the instances
+				// building up the configuration inheritance is non-trivial, the instances
 				// themselves are cached for so multiple TraceLogger instances will reuse
 				// the named TraceSources which have been created
 
@@ -191,7 +191,7 @@ namespace Castle.Core.Logging
 			switch (level)
 			{
 				case SourceLevels.All:
-					return LoggerLevel.Debug;
+					return LoggerLevel.Trace;
 				case SourceLevels.Verbose:
 					return LoggerLevel.Debug;
 				case SourceLevels.Information:
@@ -210,6 +210,8 @@ namespace Castle.Core.Logging
 		{
 			switch (level)
 			{
+				case LoggerLevel.Trace:
+					return SourceLevels.All;
 				case LoggerLevel.Debug:
 					return SourceLevels.Verbose;
 				case LoggerLevel.Info:
@@ -228,6 +230,7 @@ namespace Castle.Core.Logging
 		{
 			switch (level)
 			{
+				case LoggerLevel.Trace:
 				case LoggerLevel.Debug:
 					return TraceEventType.Verbose;
 				case LoggerLevel.Info:

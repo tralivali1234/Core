@@ -12,15 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace CastleTests.Components.DictionaryAdapter.Xml.Tests
+namespace Castle.Components.DictionaryAdapter.Xml.Tests
 {
-	using Castle.Components.DictionaryAdapter.Xml;
 	using NUnit.Framework;
 
 	[TestFixture]
-#if __MonoCS__
-	[Ignore("System.NullReferenceException : Object reference not set to an instance of an object")]
-#endif
 	public class XPathMutableCursorTestCase : XPathCursorTestCase
 	{
 		[Test]

@@ -79,16 +79,46 @@ namespace Castle.DynamicProxy.Generators
 
 		public bool EqualSignatureTypes(Type x, Type y)
 		{
-			if (x.GetTypeInfo().IsGenericParameter != y.GetTypeInfo().IsGenericParameter)
+			var xti = x.GetTypeInfo();
+			var yti = y.GetTypeInfo();
+
+			if (xti.IsGenericParameter != yti.IsGenericParameter)
+			{
+				return false;
+			}
+			else if (xti.IsGenericType != yti.IsGenericType)
 			{
 				return false;
 			}
 
-			if (x.GetTypeInfo().IsGenericParameter)
+			if (xti.IsGenericParameter)
 			{
-				if (x.GenericParameterPosition != y.GenericParameterPosition)
+				if (xti.GenericParameterPosition != yti.GenericParameterPosition)
 				{
 					return false;
+				}
+			}
+			else if (xti.IsGenericType)
+			{
+				var xGenericTypeDef = xti.GetGenericTypeDefinition();
+				var yGenericTypeDef = yti.GetGenericTypeDefinition();
+
+				if (xGenericTypeDef != yGenericTypeDef)
+				{
+					return false;
+				}
+
+				var xArgs = x.GetGenericArguments();
+				var yArgs = y.GetGenericArguments();
+
+				if (xArgs.Length != yArgs.Length)
+				{
+					return false;
+				}
+
+				for (var i = 0; i < xArgs.Length; ++i)
+				{
+					 if(!EqualSignatureTypes(xArgs[i], yArgs[i])) return false;
 				}
 			}
 			else
@@ -114,9 +144,9 @@ namespace Castle.DynamicProxy.Generators
 			}
 
 			return EqualNames(x, y) &&
-			       EqualGenericParameters(x, y) &&
-			       EqualSignatureTypes(x.ReturnType, y.ReturnType) &&
-			       EqualParameters(x, y);
+				   EqualGenericParameters(x, y) &&
+				   EqualSignatureTypes(x.ReturnType, y.ReturnType) &&
+				   EqualParameters(x, y);
 		}
 
 		public int GetHashCode(MethodInfo obj)

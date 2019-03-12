@@ -157,7 +157,7 @@ namespace Castle.DynamicProxy.Generators.Emitters
 
 		public FieldReference CreateField(string name, Type fieldType, bool serializable)
 		{
-			var atts = FieldAttributes.Public;
+			var atts = FieldAttributes.Private;
 
 			if (!serializable)
 			{
@@ -208,7 +208,7 @@ namespace Castle.DynamicProxy.Generators.Emitters
 
 		public FieldReference CreateStaticField(string name, Type fieldType)
 		{
-			return CreateStaticField(name, fieldType, FieldAttributes.Public);
+			return CreateStaticField(name, fieldType, FieldAttributes.Private);
 		}
 
 		public FieldReference CreateStaticField(string name, Type fieldType, FieldAttributes atts)
@@ -342,7 +342,7 @@ namespace Castle.DynamicProxy.Generators.Emitters
 				}
 
 				var message =
-					"This is a DynamicProxy2 error: It looks like you enoutered a bug in Visual Studio debugger, " +
+					"This is a DynamicProxy2 error: It looks like you encountered a bug in Visual Studio debugger, " +
 					"which causes this exception when proxying types with generic methods having constraints on their generic arguments." +
 					"This code will work just fine without the debugger attached. " +
 					"If you wish to use debugger you may have to switch to Visual Studio 2010 where this bug was fixed.";

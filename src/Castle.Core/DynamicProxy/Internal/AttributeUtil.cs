@@ -153,7 +153,7 @@ namespace Castle.DynamicProxy.Internal
 #else
 				var attributeType = attribute.AttributeType;
 #endif
-				if (ShouldSkipAttributeReplication(attributeType))
+				if (ShouldSkipAttributeReplication(attributeType, ignoreInheritance: false))
 				{
 					continue;
 				}
@@ -196,6 +196,8 @@ namespace Castle.DynamicProxy.Internal
 			var attributes = parameter.CustomAttributes;
 #endif
 
+			var ignoreInheritance = parameter.Member is ConstructorInfo;
+
 			foreach (var attribute in attributes)
 			{
 #if FEATURE_LEGACY_REFLECTION_API
@@ -204,7 +206,7 @@ namespace Castle.DynamicProxy.Internal
 				var attributeType = attribute.AttributeType;
 #endif
 
-				if (ShouldSkipAttributeReplication(attributeType))
+				if (ShouldSkipAttributeReplication(attributeType, ignoreInheritance))
 				{
 					continue;
 				}
@@ -222,30 +224,39 @@ namespace Castle.DynamicProxy.Internal
 		///   but there are some special cases where the attributes means
 		///   something to the CLR, where they should be skipped.
 		/// </summary>
-		private static bool ShouldSkipAttributeReplication(Type attribute)
+		private static bool ShouldSkipAttributeReplication(Type attribute, bool ignoreInheritance)
 		{
 			if (attribute.GetTypeInfo().IsPublic == false)
 			{
 				return true;
 			}
 
-			if (SpecialCaseAttributeThatShouldNotBeReplicated(attribute))
+			if (AttributesToAvoidReplicating.ShouldAvoid(attribute))
 			{
 				return true;
 			}
 
-			var attrs = attribute.GetTypeInfo().GetCustomAttributes<AttributeUsageAttribute>(true).ToArray();
-			if (attrs.Length != 0)
+			// Later, there might be more special cases requiring attribute replication,
+			// which might justify creating a `SpecialCaseAttributeThatShouldBeReplicated`
+			// method and an `AttributesToAlwaysReplicate` class. For the moment, `Param-
+			// ArrayAttribute` is the only special case, so keep it simple for now:
+			if (attribute == typeof(ParamArrayAttribute))
 			{
-				return attrs[0].Inherited;
+				return false;
 			}
 
-			return true;
-		}
+			if (!ignoreInheritance)
+			{
+				var attrs = attribute.GetTypeInfo().GetCustomAttributes<AttributeUsageAttribute>(true).ToArray();
+				if (attrs.Length != 0)
+				{
+					return attrs[0].Inherited;
+				}
 
-		private static bool SpecialCaseAttributeThatShouldNotBeReplicated(Type attribute)
-		{
-			return AttributesToAvoidReplicating.ShouldAvoid(attribute);
+				return true;
+			}
+
+			return false;
 		}
 
 		public static CustomAttributeInfo CreateInfo<TAttribute>() where TAttribute : Attribute, new()

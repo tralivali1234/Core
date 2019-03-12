@@ -27,7 +27,7 @@ namespace Castle.DynamicProxy.Contributors
 	{
 		private readonly bool canChangeTarget;
 		private readonly IList<Type> empty = new List<Type>();
-		private readonly IDictionary<Type, FieldReference> fields = new Dictionary<Type, FieldReference>();
+		private readonly IDictionary<Type, FieldReference> fields = new SortedDictionary<Type, FieldReference>(new FieldReferenceComparer());
 		private readonly GetTargetExpressionDelegate getTargetExpression;
 
 		public MixinContributor(INamingScope namingScope, bool canChangeTarget)
@@ -132,23 +132,14 @@ namespace Castle.DynamicProxy.Contributors
 
 			// no locking required as we're already within a lock
 
-			var invocation = scope.GetFromCache(key);
-			if (invocation != null)
-			{
-				return invocation;
-			}
-
-			invocation = new CompositionInvocationTypeGenerator(method.Method.DeclaringType,
-			                                                    method,
-			                                                    method.Method,
-			                                                    canChangeTarget,
-			                                                    null)
+			return scope.TypeCache.GetOrAddWithoutTakingLock(key, _ =>
+				new CompositionInvocationTypeGenerator(method.Method.DeclaringType,
+				                                       method,
+				                                       method.Method,
+				                                       canChangeTarget,
+				                                       null)
 				.Generate(emitter, options, namingScope)
-				.BuildType();
-
-			scope.RegisterInCache(key, invocation);
-
-			return invocation;
+				.BuildType());
 		}
 	}
 }
